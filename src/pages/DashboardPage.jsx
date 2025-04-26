@@ -180,44 +180,75 @@ const DashboardPage = () => {
   const calculateWeeklyApplications = (applications) => {
     if (!applications.length) return [];
 
-    // Create a map of week start dates to count of applications
-    const weekMap = {};
+    // Create a map of date to count of applications
+    const dateMap = {};
 
     applications.forEach((app) => {
       if (!app.dateApplied) return;
 
-      const date = new Date(app.dateApplied);
+      // Use the actual application date as the key
+      const dateKey = app.dateApplied.split('T')[0]; // Remove time if it exists
 
-      // Get the week's start date (Sunday)
-      const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
-      const diff = date.getDate() - day;
-      const weekStart = new Date(date.setDate(diff));
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekKey = weekStart.toISOString().split('T')[0];
-
-      if (!weekMap[weekKey]) {
-        weekMap[weekKey] = 0;
+      if (!dateMap[dateKey]) {
+        dateMap[dateKey] = 0;
       }
 
-      weekMap[weekKey]++;
+      dateMap[dateKey]++;
     });
 
     // Convert to array and sort by date
-    const weeklyData = Object.entries(weekMap)
-      .map(([week, count]) => ({ week, count }))
-      .sort((a, b) => new Date(a.week) - new Date(b.week));
+    const dailyData = Object.entries(dateMap)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Format dates for display
-    return weeklyData.map((item) => ({
-      week: formatDate(item.week),
-      count: item.count,
-    }));
+    // Group by week (for the chart visualization)
+    const weeklyData = [];
+    let currentWeekStart = null;
+    let currentWeekCount = 0;
+
+    for (let i = 0; i < dailyData.length; i++) {
+      const date = new Date(dailyData[i].date);
+
+      // If this is the first date or belongs to a new week
+      if (
+        currentWeekStart === null ||
+        daysBetween(currentWeekStart, date) >= 7
+      ) {
+        // If we have accumulated data for the previous week, add it
+        if (currentWeekStart !== null) {
+          weeklyData.push({
+            week: formatDate(currentWeekStart),
+            count: currentWeekCount,
+          });
+        }
+
+        // Start a new week
+        currentWeekStart = date;
+        currentWeekCount = dailyData[i].count;
+      } else {
+        // Add to the current week
+        currentWeekCount += dailyData[i].count;
+      }
+    }
+
+    // Add the last week if there's data
+    if (currentWeekStart !== null) {
+      weeklyData.push({
+        week: formatDate(currentWeekStart),
+        count: currentWeekCount,
+      });
+    }
+
+    return weeklyData;
   };
 
-  const formatDate = (dateString) => {
+  const daysBetween = (date1, date2) => {
+    const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+    return Math.round(Math.abs((date1 - date2) / oneDay));
+  };
+
+  const formatDate = (date) => {
     const options = { month: 'short', day: 'numeric' };
-    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', options);
   };
 
