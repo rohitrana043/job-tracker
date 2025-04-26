@@ -49,6 +49,17 @@ export const getCompanyById = (companyId) => {
   return companies.find((c) => c.id === companyId) || null;
 };
 
+// Get a company by name (case insensitive)
+export const getCompanyByName = (companyName) => {
+  if (!companyName) return null;
+
+  const companies = getCompanies();
+  return (
+    companies.find((c) => c.name.toLowerCase() === companyName.toLowerCase()) ||
+    null
+  );
+};
+
 // Add a job application to a company
 export const addJobApplication = (companyId, jobApplication) => {
   const company = getCompanyById(companyId);
@@ -100,4 +111,72 @@ export const getCompaniesWithoutApplications = () => {
   return companies.filter(
     (c) => !c.applications || c.applications.length === 0
   );
+};
+
+// Import job applications from processed CSV data
+export const importJobApplications = (jobApplications) => {
+  if (!jobApplications || !jobApplications.length)
+    return { added: 0, updated: 0, errors: [] };
+
+  const companies = getCompanies();
+  const stats = {
+    added: 0,
+    updated: 0,
+    errors: [],
+  };
+
+  jobApplications.forEach((item) => {
+    try {
+      // Find the company by name (case insensitive)
+      const companyName = item.companyName;
+      let company = companies.find(
+        (c) => c.name.toLowerCase() === companyName.toLowerCase()
+      );
+
+      // If company doesn't exist, add an error and skip this application
+      if (!company) {
+        stats.errors.push(
+          `Company "${companyName}" not found. Please import this company first.`
+        );
+        return;
+      }
+
+      // If company doesn't have applications array, create it
+      if (!company.applications) {
+        company.applications = [];
+      }
+
+      // Check if this application already exists by ID
+      const existingAppIndex = company.applications.findIndex(
+        (a) => a.id === item.application.id
+      );
+
+      if (existingAppIndex !== -1) {
+        // Update existing application
+        company.applications[existingAppIndex] = {
+          ...company.applications[existingAppIndex],
+          ...item.application,
+          lastUpdated: new Date().toISOString(),
+        };
+        stats.updated++;
+      } else {
+        // Add new application
+        company.applications.push({
+          ...item.application,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+        });
+        stats.added++;
+      }
+    } catch (error) {
+      stats.errors.push(
+        `Error processing application for "${item.companyName}": ${error.message}`
+      );
+    }
+  });
+
+  // Save updated companies
+  saveCompanies(companies);
+
+  return stats;
 };

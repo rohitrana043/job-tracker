@@ -46,6 +46,73 @@ export const parseCompaniesCSV = (file) => {
   });
 };
 
+// Parse CSV file containing job applications
+export const parseJobApplicationsCSV = (file) => {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: true, // Convert strings to numbers/booleans where appropriate
+      complete: (results) => {
+        try {
+          // Validate required fields
+          if (results.data.length === 0) {
+            throw new Error('No job application data found in the CSV file');
+          }
+
+          // Check for required fields
+          const firstRow = results.data[0];
+          if (!firstRow.companyName || !firstRow.jobTitle) {
+            throw new Error(
+              'CSV must contain at least companyName and jobTitle columns'
+            );
+          }
+
+          // Extract job applications from CSV data
+          const applications = results.data.map((row) => {
+            // Convert string representation of boolean to actual boolean
+            let remote = row.remote;
+            if (typeof remote === 'string') {
+              remote =
+                remote.toLowerCase() === 'true' ||
+                remote.toLowerCase() === 'yes';
+            }
+
+            // Create a job application object for each row
+            return {
+              companyName: row.companyName.trim(),
+              application: {
+                id: row.id || uuidv4(),
+                title: row.jobTitle.trim(),
+                jobId: row.jobId || `JOB-${Math.floor(Math.random() * 10000)}`,
+                status: row.status || 'Applied',
+                dateApplied:
+                  row.dateApplied || new Date().toISOString().split('T')[0],
+                followUpDate: row.followUpDate || '',
+                skills: row.skills || '',
+                salary: row.salary || '',
+                location: row.location || '',
+                remote: remote || false,
+                description: row.description || row.notes || '',
+                createdAt: row.createdAt || new Date().toISOString(),
+                lastUpdated: row.lastUpdated || new Date().toISOString(),
+                followedUp: row.followedUp || false,
+              },
+            };
+          });
+
+          resolve(applications);
+        } catch (error) {
+          reject(error);
+        }
+      },
+      error: (error) => {
+        reject(error);
+      },
+    });
+  });
+};
+
 // Export companies to CSV
 export const exportCompaniesToCSV = (companies) => {
   // Convert companies to CSV-friendly format
@@ -86,13 +153,21 @@ export const exportJobApplicationsToCSV = (companies) => {
     if (company.applications && company.applications.length > 0) {
       company.applications.forEach((app) => {
         applications.push({
-          companyId: company.id,
           companyName: company.name,
-          jobId: app.id,
+          companyId: company.id,
+          id: app.id,
           jobTitle: app.title,
+          jobId: app.jobId,
           status: app.status,
           dateApplied: app.dateApplied,
-          description: app.description,
+          followUpDate: app.followUpDate || '',
+          skills: app.skills || '',
+          salary: app.salary || '',
+          location: app.location || '',
+          remote: app.remote || false,
+          description: app.description || '',
+          lastUpdated: app.lastUpdated || app.createdAt || '',
+          followedUp: app.followedUp || false,
         });
       });
     }
