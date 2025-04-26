@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Upload, Download, Search } from 'lucide-react';
 import CompanyCard from '../components/CompanyCard';
+import LocalStorageNotice, {
+  LocalStorageInfoButton,
+} from '../components/LocalStorageNotice';
 import {
   getCompanies,
   getCompaniesWithApplications,
@@ -58,13 +61,16 @@ const HomePage = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Job Application Tracker
           </h1>
-          <p className="text-gray-600">
-            {appliedCompanies.length > 0
-              ? `${appliedCompanies.length} ${
-                  appliedCompanies.length === 1 ? 'company' : 'companies'
-                } with applications`
-              : 'No job applications yet'}
-          </p>
+          <div className="flex items-center">
+            <p className="text-gray-600 mr-2">
+              {appliedCompanies.length > 0
+                ? `${appliedCompanies.length} ${
+                    appliedCompanies.length === 1 ? 'company' : 'companies'
+                  } with applications`
+                : 'No job applications yet'}
+            </p>
+            <LocalStorageInfoButton />
+          </div>
         </div>
 
         <div className="mt-3 sm:mt-0 flex flex-wrap gap-2">
@@ -85,6 +91,9 @@ const HomePage = () => {
           </Link>
         </div>
       </div>
+
+      {/* Local Storage Notice */}
+      <LocalStorageNotice />
 
       <div className="mb-6">
         <div className="relative">

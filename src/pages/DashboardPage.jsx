@@ -52,204 +52,286 @@ const DashboardPage = () => {
     topSkills: [],
   });
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = () => {
-    const companies = getCompanies();
-
-    // Calculate all needed stats
-    calculateStats(companies);
+    try {
+      setIsLoading(true);
+      setError(null);
+      const companies = getCompanies();
+      calculateStats(companies);
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+      setError(
+        'Failed to load dashboard data. Please try refreshing the page.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const calculateStats = (companies) => {
     if (!companies || !companies.length) {
+      setStats({
+        totalCompanies: 0,
+        totalApplications: 0,
+        statusBreakdown: [],
+        weeklyApplications: [],
+        responseRate: 0,
+        upcomingFollowUps: [],
+        recentApplications: [],
+        topSkills: [],
+      });
       return;
     }
 
-    // Get all applications across all companies
-    const allApplications = [];
-    companies.forEach((company) => {
-      if (company.applications && company.applications.length) {
-        company.applications.forEach((app) => {
-          allApplications.push({
-            ...app,
-            companyName: company.name,
-            companyId: company.id,
+    try {
+      // Get all applications across all companies
+      const allApplications = [];
+      companies.forEach((company) => {
+        if (company.applications && company.applications.length) {
+          company.applications.forEach((app) => {
+            allApplications.push({
+              ...app,
+              companyName: company.name,
+              companyId: company.id,
+            });
           });
-        });
-      }
-    });
+        }
+      });
 
-    // Total counts
-    const totalCompanies = companies.length;
-    const totalApplications = allApplications.length;
+      // Total counts
+      const totalCompanies = companies.length;
+      const totalApplications = allApplications.length;
 
-    // Status breakdown
-    const statusCounts = {
-      Applied: 0,
-      Interview: 0,
-      Offer: 0,
-      Rejected: 0,
-    };
+      // Status breakdown
+      const statusCounts = {
+        Applied: 0,
+        Interview: 0,
+        Offer: 0,
+        Rejected: 0,
+      };
 
-    allApplications.forEach((app) => {
-      if (statusCounts[app.status] !== undefined) {
-        statusCounts[app.status]++;
-      }
-    });
+      allApplications.forEach((app) => {
+        if (app.status && statusCounts[app.status] !== undefined) {
+          statusCounts[app.status]++;
+        }
+      });
 
-    const statusBreakdown = Object.keys(statusCounts).map((status) => ({
-      name: status,
-      value: statusCounts[status],
-    }));
+      const statusBreakdown = Object.keys(statusCounts).map((status) => ({
+        name: status,
+        value: statusCounts[status],
+      }));
 
-    // Weekly applications data
-    const weeklyData = calculateWeeklyApplications(allApplications);
+      // Weekly applications data
+      const weeklyData = calculateWeeklyApplications(allApplications);
 
-    // Response rate (% of applications that moved beyond 'Applied' status)
-    const responsesCount =
-      statusCounts['Interview'] +
-      statusCounts['Offer'] +
-      statusCounts['Rejected'];
-    const responseRate =
-      totalApplications > 0
-        ? Math.round((responsesCount / totalApplications) * 100)
-        : 0;
+      // Response rate (% of applications that moved beyond 'Applied' status)
+      const responsesCount =
+        statusCounts['Interview'] +
+        statusCounts['Offer'] +
+        statusCounts['Rejected'];
+      const responseRate =
+        totalApplications > 0
+          ? Math.round((responsesCount / totalApplications) * 100)
+          : 0;
 
-    // Upcoming follow-ups
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+      // Upcoming follow-ups
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    const upcomingFollowUps = allApplications
-      .filter((app) => {
-        // Only include applications that:
-        // 1. Have a follow-up date
-        // 2. The follow-up date is today or in the future
-        // 3. The application is still in 'Applied' status
-        // 4. The application hasn't been followed up on yet
-        if (!app.followUpDate) return false;
+      const upcomingFollowUps = allApplications
+        .filter((app) => {
+          // Only include applications that:
+          // 1. Have a follow-up date
+          // 2. The follow-up date is today or in the future
+          // 3. The application is still in 'Applied' status
+          // 4. The application hasn't been followed up on yet
+          if (!app.followUpDate) return false;
 
-        const followUpDate = new Date(app.followUpDate);
-        followUpDate.setHours(0, 0, 0, 0);
+          try {
+            const followUpDate = new Date(app.followUpDate);
+            followUpDate.setHours(0, 0, 0, 0);
 
-        return (
-          followUpDate >= today && app.status === 'Applied' && !app.followedUp
-        );
-      })
-      .sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate))
-      .slice(0, 5); // Get only the 5 most immediate follow-ups
-
-    // Recent applications
-    const recentApplications = [...allApplications]
-      .sort((a, b) => new Date(b.dateApplied) - new Date(a.dateApplied))
-      .slice(0, 5);
-
-    // Extract and count skills
-    const skillsMap = {};
-    allApplications.forEach((app) => {
-      if (app.skills) {
-        const skills = app.skills.split(',').map((s) => s.trim());
-        skills.forEach((skill) => {
-          if (skill) {
-            skillsMap[skill] = (skillsMap[skill] || 0) + 1;
+            return (
+              followUpDate >= today &&
+              app.status === 'Applied' &&
+              !app.followedUp
+            );
+          } catch (e) {
+            console.error('Invalid date format:', app.followUpDate);
+            return false;
           }
-        });
-      }
-    });
+        })
+        .sort((a, b) => {
+          try {
+            return new Date(a.followUpDate) - new Date(b.followUpDate);
+          } catch (e) {
+            return 0;
+          }
+        })
+        .slice(0, 5); // Get only the 5 most immediate follow-ups
 
-    const topSkills = Object.entries(skillsMap)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      // Recent applications
+      const recentApplications = [...allApplications]
+        .sort((a, b) => {
+          try {
+            return new Date(b.dateApplied) - new Date(a.dateApplied);
+          } catch (e) {
+            return 0;
+          }
+        })
+        .slice(0, 5);
 
-    // Update state with all calculated stats
-    setStats({
-      totalCompanies,
-      totalApplications,
-      statusBreakdown,
-      weeklyApplications: weeklyData,
-      responseRate,
-      upcomingFollowUps,
-      recentApplications,
-      topSkills,
-    });
+      // Extract and count skills
+      const skillsMap = {};
+      allApplications.forEach((app) => {
+        if (app.skills) {
+          const skills = app.skills.split(',').map((s) => s.trim());
+          skills.forEach((skill) => {
+            if (skill) {
+              skillsMap[skill] = (skillsMap[skill] || 0) + 1;
+            }
+          });
+        }
+      });
+
+      const topSkills = Object.entries(skillsMap)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Update state with all calculated stats
+      setStats({
+        totalCompanies,
+        totalApplications,
+        statusBreakdown,
+        weeklyApplications: weeklyData,
+        responseRate,
+        upcomingFollowUps,
+        recentApplications,
+        topSkills,
+      });
+    } catch (err) {
+      console.error('Error calculating stats:', err);
+      setError(
+        'Failed to process dashboard data. Please try refreshing the page.'
+      );
+    }
   };
 
   const calculateWeeklyApplications = (applications) => {
-    if (!applications.length) return [];
+    try {
+      if (!applications || !applications.length) return [];
 
-    // Create a map of date to count of applications
-    const dateMap = {};
+      // Create a map of date to count of applications
+      const dateMap = {};
 
-    applications.forEach((app) => {
-      if (!app.dateApplied) return;
+      applications.forEach((app) => {
+        if (!app.dateApplied) return;
 
-      // Use the actual application date as the key
-      const dateKey = app.dateApplied.split('T')[0]; // Remove time if it exists
+        try {
+          // Use the actual application date as the key
+          const dateKey = app.dateApplied.split('T')[0]; // Remove time if it exists
 
-      if (!dateMap[dateKey]) {
-        dateMap[dateKey] = 0;
-      }
+          if (!dateMap[dateKey]) {
+            dateMap[dateKey] = 0;
+          }
 
-      dateMap[dateKey]++;
-    });
-
-    // Convert to array and sort by date
-    const dailyData = Object.entries(dateMap)
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    // Group by week (for the chart visualization)
-    const weeklyData = [];
-    let currentWeekStart = null;
-    let currentWeekCount = 0;
-
-    for (let i = 0; i < dailyData.length; i++) {
-      const date = new Date(dailyData[i].date);
-
-      // If this is the first date or belongs to a new week
-      if (
-        currentWeekStart === null ||
-        daysBetween(currentWeekStart, date) >= 7
-      ) {
-        // If we have accumulated data for the previous week, add it
-        if (currentWeekStart !== null) {
-          weeklyData.push({
-            week: formatDate(currentWeekStart),
-            count: currentWeekCount,
-          });
+          dateMap[dateKey]++;
+        } catch (e) {
+          console.error('Error processing application date:', app.dateApplied);
         }
-
-        // Start a new week
-        currentWeekStart = date;
-        currentWeekCount = dailyData[i].count;
-      } else {
-        // Add to the current week
-        currentWeekCount += dailyData[i].count;
-      }
-    }
-
-    // Add the last week if there's data
-    if (currentWeekStart !== null) {
-      weeklyData.push({
-        week: formatDate(currentWeekStart),
-        count: currentWeekCount,
       });
-    }
 
-    return weeklyData;
+      // Convert to array and sort by date
+      const dailyData = Object.entries(dateMap)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => {
+          try {
+            return new Date(a.date) - new Date(b.date);
+          } catch (e) {
+            return 0;
+          }
+        });
+
+      // Group by week (for the chart visualization)
+      const weeklyData = [];
+      let currentWeekStart = null;
+      let currentWeekCount = 0;
+
+      for (let i = 0; i < dailyData.length; i++) {
+        try {
+          const date = new Date(dailyData[i].date);
+
+          // If this is the first date or belongs to a new week
+          if (
+            currentWeekStart === null ||
+            daysBetween(currentWeekStart, date) >= 7
+          ) {
+            // If we have accumulated data for the previous week, add it
+            if (currentWeekStart !== null) {
+              weeklyData.push({
+                week: formatDate(currentWeekStart),
+                count: currentWeekCount,
+              });
+            }
+
+            // Start a new week
+            currentWeekStart = date;
+            currentWeekCount = dailyData[i].count;
+          } else {
+            // Add to the current week
+            currentWeekCount += dailyData[i].count;
+          }
+        } catch (e) {
+          console.error(
+            'Error processing date in weekly data:',
+            dailyData[i].date
+          );
+        }
+      }
+
+      // Add the last week if there's data
+      if (currentWeekStart !== null) {
+        weeklyData.push({
+          week: formatDate(currentWeekStart),
+          count: currentWeekCount,
+        });
+      }
+
+      return weeklyData;
+    } catch (err) {
+      console.error('Error calculating weekly applications:', err);
+      return [];
+    }
   };
 
   const daysBetween = (date1, date2) => {
-    const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-    return Math.round(Math.abs((date1 - date2) / oneDay));
+    try {
+      if (!date1 || !date2) return 99; // Default to large number to force new week
+      const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+      return Math.round(Math.abs((date1 - date2) / oneDay));
+    } catch (err) {
+      console.error('Error calculating days between:', err);
+      return 99; // Default to large number to force new week
+    }
   };
 
   const formatDate = (date) => {
-    const options = { month: 'short', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
+    try {
+      if (!date) return 'Unknown date';
+      const options = { month: 'short', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    } catch (err) {
+      console.error('Error formatting date:', err);
+      return 'Unknown date';
+    }
   };
 
   const renderStatusTooltip = ({ active, payload }) => {
@@ -263,6 +345,39 @@ const DashboardPage = () => {
     }
     return null;
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Application Dashboard
+        </h1>
+        <div className="flex justify-center items-center p-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Application Dashboard
+        </h1>
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          <p className="font-medium">Error loading dashboard</p>
+          <p>{error}</p>
+          <button
+            onClick={loadData}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -337,7 +452,8 @@ const DashboardPage = () => {
             Application Status
           </h2>
 
-          {stats.statusBreakdown.length > 0 ? (
+          {stats.statusBreakdown.length > 0 &&
+          stats.statusBreakdown.some((item) => item.value > 0) ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -378,7 +494,7 @@ const DashboardPage = () => {
             Weekly Applications
           </h2>
 
-          {stats.weeklyApplications.length > 0 ? (
+          {stats.weeklyApplications && stats.weeklyApplications.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
@@ -413,7 +529,7 @@ const DashboardPage = () => {
           Top Skills Highlighted
         </h2>
 
-        {stats.topSkills.length > 0 ? (
+        {stats.topSkills && stats.topSkills.length > 0 ? (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -453,7 +569,7 @@ const DashboardPage = () => {
             </Link>
           </div>
 
-          {stats.recentApplications.length > 0 ? (
+          {stats.recentApplications && stats.recentApplications.length > 0 ? (
             <div className="space-y-3">
               {stats.recentApplications.map((app) => (
                 <Link
@@ -490,7 +606,7 @@ const DashboardPage = () => {
 
                   <div className="text-right">
                     <span className="text-xs text-gray-500">
-                      Applied {formatDate(app.dateApplied)}
+                      Applied {formatDate(new Date(app.dateApplied))}
                     </span>
                   </div>
                 </Link>
@@ -509,7 +625,7 @@ const DashboardPage = () => {
             Upcoming Follow-ups
           </h2>
 
-          {stats.upcomingFollowUps.length > 0 ? (
+          {stats.upcomingFollowUps && stats.upcomingFollowUps.length > 0 ? (
             <div className="space-y-3">
               {stats.upcomingFollowUps.map((app) => (
                 <Link
@@ -529,7 +645,7 @@ const DashboardPage = () => {
                   <div className="text-right flex items-center">
                     <CalendarDays className="h-4 w-4 text-gray-400 mr-1" />
                     <span className="text-xs text-gray-500">
-                      {formatDate(app.followUpDate)}
+                      {formatDate(new Date(app.followUpDate))}
                     </span>
                   </div>
                 </Link>
