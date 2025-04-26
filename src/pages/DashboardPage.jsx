@@ -31,6 +31,11 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import { getCompanies } from '../utils/storage';
+import {
+  formatDateForDisplay,
+  parseISODate,
+  daysBetween,
+} from '../utils/dateUtils';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const STATUS_COLORS = {
@@ -236,8 +241,11 @@ const DashboardPage = () => {
         if (!app.dateApplied) return;
 
         try {
-          // Use the actual application date as the key
-          const dateKey = app.dateApplied.split('T')[0]; // Remove time if it exists
+          // Parse the date correctly using our utility
+          const appDate = parseISODate(app.dateApplied);
+
+          // Format to YYYY-MM-DD for consistent keys
+          const dateKey = appDate.toISOString().split('T')[0];
 
           if (!dateMap[dateKey]) {
             dateMap[dateKey] = 0;
@@ -254,7 +262,7 @@ const DashboardPage = () => {
         .map(([date, count]) => ({ date, count }))
         .sort((a, b) => {
           try {
-            return new Date(a.date) - new Date(b.date);
+            return parseISODate(a.date) - parseISODate(b.date);
           } catch (e) {
             return 0;
           }
@@ -267,7 +275,7 @@ const DashboardPage = () => {
 
       for (let i = 0; i < dailyData.length; i++) {
         try {
-          const date = new Date(dailyData[i].date);
+          const date = parseISODate(dailyData[i].date);
 
           // If this is the first date or belongs to a new week
           if (
@@ -277,7 +285,7 @@ const DashboardPage = () => {
             // If we have accumulated data for the previous week, add it
             if (currentWeekStart !== null) {
               weeklyData.push({
-                week: formatDate(currentWeekStart),
+                week: formatDateForDisplay(currentWeekStart),
                 count: currentWeekCount,
               });
             }
@@ -300,7 +308,7 @@ const DashboardPage = () => {
       // Add the last week if there's data
       if (currentWeekStart !== null) {
         weeklyData.push({
-          week: formatDate(currentWeekStart),
+          week: formatDateForDisplay(currentWeekStart),
           count: currentWeekCount,
         });
       }
@@ -324,14 +332,7 @@ const DashboardPage = () => {
   };
 
   const formatDate = (date) => {
-    try {
-      if (!date) return 'Unknown date';
-      const options = { month: 'short', day: 'numeric' };
-      return date.toLocaleDateString('en-US', options);
-    } catch (err) {
-      console.error('Error formatting date:', err);
-      return 'Unknown date';
-    }
+    return formatDateForDisplay(date);
   };
 
   const renderStatusTooltip = ({ active, payload }) => {
@@ -606,7 +607,8 @@ const DashboardPage = () => {
 
                   <div className="text-right">
                     <span className="text-xs text-gray-500">
-                      Applied {formatDate(new Date(app.dateApplied))}
+                      Applied{' '}
+                      {formatDateForDisplay(parseISODate(app.dateApplied))}
                     </span>
                   </div>
                 </Link>
@@ -645,7 +647,7 @@ const DashboardPage = () => {
                   <div className="text-right flex items-center">
                     <CalendarDays className="h-4 w-4 text-gray-400 mr-1" />
                     <span className="text-xs text-gray-500">
-                      {formatDate(new Date(app.followUpDate))}
+                      {formatDateForDisplay(parseISODate(app.followUpDate))}
                     </span>
                   </div>
                 </Link>

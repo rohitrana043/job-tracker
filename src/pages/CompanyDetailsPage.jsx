@@ -26,6 +26,7 @@ import {
 } from '../utils/storage';
 import AddJobModal from '../components/AddJobModal';
 import InterviewNotes from '../components/InterviewNotes';
+import { formatDateForDisplay, parseISODate } from '../utils/dateUtils';
 
 const JOB_STATUS_COLORS = {
   Applied: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -245,12 +246,7 @@ const CompanyDetailsPage = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
 
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateForDisplay(parseISODate(dateString));
   };
 
   const getActiveJob = () => {

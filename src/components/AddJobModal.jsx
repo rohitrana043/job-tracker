@@ -4,6 +4,11 @@
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { X, Calendar, Bell } from 'lucide-react';
+import {
+  getTodayFormatted,
+  formatDateForInput,
+  addDays,
+} from '../utils/dateUtils';
 
 const JOB_STATUS_OPTIONS = ['Applied', 'Interview', 'Offer', 'Rejected'];
 
@@ -13,7 +18,7 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
     jobId: '',
     description: '',
     status: 'Applied',
-    dateApplied: new Date().toISOString().split('T')[0],
+    dateApplied: getTodayFormatted(),
     followUpDate: '', // New field for follow-up reminder
     skills: '', // New field for skills highlighted
     salary: '', // New field for salary information
@@ -75,9 +80,8 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
     // Auto-set follow-up date if not provided (1 week after application)
     let followUpDate = jobData.followUpDate;
     if (!followUpDate) {
-      const date = new Date(jobData.dateApplied);
-      date.setDate(date.getDate() + 7); // 1 week later
-      followUpDate = date.toISOString().split('T')[0];
+      // Use utility functions to handle this correctly
+      followUpDate = formatDateForInput(addDays(jobData.dateApplied, 7));
     }
 
     // Create the job application object
@@ -86,7 +90,7 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
       title: jobData.title,
       jobId: jobData.jobId || `JOB-${Math.floor(Math.random() * 10000)}`,
       status: jobData.status,
-      dateApplied: jobData.dateApplied,
+      dateApplied: jobData.dateApplied, // Store as YYYY-MM-DD string
       followUpDate: followUpDate,
       skills: jobData.skills,
       salary: jobData.salary,
@@ -106,9 +110,9 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
   const suggestedFollowUpDate = () => {
     if (!jobData.dateApplied) return '';
 
-    const date = new Date(jobData.dateApplied);
-    date.setDate(date.getDate() + 7);
-    return date.toISOString().split('T')[0];
+    // Use the addDays utility to add 7 days correctly
+    const followUpDate = addDays(jobData.dateApplied, 7);
+    return formatDateForInput(followUpDate);
   };
 
   return (
