@@ -1,5 +1,5 @@
 // src/pages/ImportExportPage.jsx
-// Page for importing and exporting data
+// Responsive version of the import/export page
 
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -224,26 +224,26 @@ const ImportExportPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-6">
+    <div className="container mx-auto px-4 py-4 sm:py-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           to="/"
-          className="flex items-center text-blue-600 hover:text-blue-800"
+          className="flex items-center text-blue-600 hover:text-blue-800 text-sm sm:text-base"
         >
-          <ArrowLeft className="mr-1 h-5 w-5" />
+          <ArrowLeft className="mr-1 h-4 w-4 sm:h-5 sm:w-5" />
           Back to Home
         </Link>
       </div>
 
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
           Import & Export
         </h1>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-6">
+        <div className="flex border-b border-gray-200 mb-4 sm:mb-6 overflow-x-auto">
           <button
-            className={`py-2 px-4 font-medium text-sm focus:outline-none ${
+            className={`py-2 px-3 sm:px-4 font-medium text-xs sm:text-sm focus:outline-none whitespace-nowrap ${
               activeTab === 'companies'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -259,7 +259,7 @@ const ImportExportPage = () => {
             Companies
           </button>
           <button
-            className={`py-2 px-4 font-medium text-sm focus:outline-none ${
+            className={`py-2 px-3 sm:px-4 font-medium text-xs sm:text-sm focus:outline-none whitespace-nowrap ${
               activeTab === 'jobs'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -280,22 +280,22 @@ const ImportExportPage = () => {
         {activeTab === 'companies' && (
           <>
             {/* Import Section */}
-            <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+            <div className="bg-white shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
               <div className="flex items-center mb-4">
-                <Briefcase className="h-6 w-6 text-blue-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-900">
+                <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mr-2" />
+                <h2 className="text-base sm:text-lg font-medium text-gray-900">
                   Import Companies
                 </h2>
               </div>
 
               {importSuccess && importStats && (
                 <div className="mb-4 bg-green-50 border border-green-200 text-green-800 rounded-md p-3 flex items-start">
-                  <Check className="h-5 w-5 mr-2 mt-0.5" />
+                  <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2 mt-0.5" />
                   <div>
-                    <p className="font-medium">
+                    <p className="font-medium text-sm sm:text-base">
                       Companies imported successfully!
                     </p>
-                    <ul className="mt-1 text-sm">
+                    <ul className="mt-1 text-xs sm:text-sm">
                       <li>Total: {importStats.total}</li>
                       <li>Added: {importStats.added}</li>
                       <li>Skipped (already exists): {importStats.skipped}</li>
@@ -305,35 +305,35 @@ const ImportExportPage = () => {
               )}
 
               {importError && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-md p-3 flex items-center">
-                  <AlertCircle className="h-5 w-5 mr-2" />
-                  {importError}
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-md p-3 flex items-start">
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">{importError}</span>
                 </div>
               )}
 
               {previewData && previewData.type === 'companies' ? (
                 <div className="mb-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
-                    <h3 className="font-medium text-blue-800 mb-2">
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 sm:p-4 mb-4">
+                    <h3 className="font-medium text-blue-800 text-sm sm:text-base mb-2">
                       Preview Import
                     </h3>
-                    <p>Found {previewData.count} companies in the CSV file.</p>
+                    <p className="text-xs sm:text-sm">
+                      Found {previewData.count} companies in the CSV file.
+                    </p>
 
                     {previewData.data.length > 0 && (
                       <div className="mt-3">
-                        <h4 className="text-sm font-medium text-blue-800 mb-1">
+                        <h4 className="text-xs sm:text-sm font-medium text-blue-800 mb-1">
                           Sample Companies:
                         </h4>
-                        <ul className="list-disc pl-5 text-blue-800">
+                        <ul className="list-disc pl-5 text-blue-800 text-xs sm:text-sm">
                           {previewData.data
                             .slice(0, 5)
                             .map((company, index) => (
-                              <li key={index} className="text-sm">
-                                {company.name}
-                              </li>
+                              <li key={index}>{company.name}</li>
                             ))}
                           {previewData.data.length > 5 && (
-                            <li className="text-sm italic">
+                            <li className="italic">
                               ...and {previewData.data.length - 5} more
                             </li>
                           )}
@@ -342,16 +342,16 @@ const ImportExportPage = () => {
                     )}
                   </div>
 
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                     <button
                       onClick={handleImportCompanies}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm sm:text-base"
                     >
                       Confirm Import
                     </button>
                     <button
                       onClick={handleCancelImport}
-                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm sm:text-base"
                     >
                       Cancel
                     </button>
@@ -359,13 +359,13 @@ const ImportExportPage = () => {
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-4 text-xs sm:text-sm">
                     Upload a CSV file with company names to import. The CSV
                     should have a header row with a column labeled "name" or
                     "company" or "companyName".
                   </p>
 
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                     <input
                       type="file"
                       accept=".csv"
@@ -376,23 +376,23 @@ const ImportExportPage = () => {
                     />
                     <label
                       htmlFor="company-csv-upload"
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+                      className="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer text-sm sm:text-base"
                     >
-                      <Upload className="mr-1 h-5 w-5" />
+                      <Upload className="mr-1 h-4 w-4 sm:h-5 sm:w-5" />
                       {isImporting ? 'Processing...' : 'Select CSV File'}
                     </label>
 
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs sm:text-sm text-gray-500 truncate max-w-full">
                       {companyFileInputRef.current?.files?.[0]?.name ||
                         'No file selected'}
                     </span>
                   </div>
 
                   <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <h3 className="text-sm font-medium text-yellow-800 mb-1">
+                    <h3 className="text-xs sm:text-sm font-medium text-yellow-800 mb-1">
                       CSV Format Example:
                     </h3>
-                    <pre className="text-xs text-yellow-800 bg-yellow-100 p-2 rounded overflow-auto">
+                    <pre className="text-xs bg-yellow-100 p-2 rounded overflow-auto whitespace-pre-wrap">
                       name
                       <br />
                       Acme Corporation
@@ -407,24 +407,24 @@ const ImportExportPage = () => {
             </div>
 
             {/* Export Section */}
-            <div className="bg-white shadow-sm rounded-lg p-6">
+            <div className="bg-white shadow-sm rounded-lg p-4 sm:p-6">
               <div className="flex items-center mb-4">
-                <Download className="h-6 w-6 text-blue-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-900">
+                <Download className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mr-2" />
+                <h2 className="text-base sm:text-lg font-medium text-gray-900">
                   Export Companies
                 </h2>
               </div>
 
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 mb-4 text-xs sm:text-sm">
                 Export your company list as a CSV file for backup or to use in
                 other applications.
               </p>
 
               <button
                 onClick={handleExportCompanies}
-                className="flex items-center w-full px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50"
+                className="flex items-center w-full px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 text-sm sm:text-base"
               >
-                <Download className="mr-2 h-5 w-5 text-blue-600" />
+                <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 Export Companies List
               </button>
             </div>
@@ -435,22 +435,22 @@ const ImportExportPage = () => {
         {activeTab === 'jobs' && (
           <>
             {/* Import Section */}
-            <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+            <div className="bg-white shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
               <div className="flex items-center mb-4">
-                <FileText className="h-6 w-6 text-purple-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-900">
+                <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 mr-2" />
+                <h2 className="text-base sm:text-lg font-medium text-gray-900">
                   Import Job Applications
                 </h2>
               </div>
 
               {importSuccess && importStats && (
                 <div className="mb-4 bg-green-50 border border-green-200 text-green-800 rounded-md p-3 flex items-start">
-                  <Check className="h-5 w-5 mr-2 mt-0.5" />
+                  <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="font-medium">
+                    <p className="font-medium text-sm sm:text-base">
                       Job applications imported successfully!
                     </p>
-                    <ul className="mt-1 text-sm">
+                    <ul className="mt-1 text-xs sm:text-sm">
                       <li>Total: {importStats.total}</li>
                       <li>Added: {importStats.added}</li>
                       <li>Updated: {importStats.updated}</li>
@@ -463,16 +463,20 @@ const ImportExportPage = () => {
 
                     {importStats.errors && importStats.errors.length > 0 && (
                       <div className="mt-2">
-                        <p className="font-medium text-red-700">Errors:</p>
-                        <ul className="list-disc pl-5 text-sm text-red-700">
+                        <p className="font-medium text-red-700 text-xs sm:text-sm">
+                          Errors:
+                        </p>
+                        <ul className="list-disc pl-5 text-xs sm:text-sm text-red-700">
                           {importStats.errors
-                            .slice(0, 5)
+                            .slice(0, 3)
                             .map((error, index) => (
-                              <li key={index}>{error}</li>
+                              <li key={index} className="break-words">
+                                {error}
+                              </li>
                             ))}
-                          {importStats.errors.length > 5 && (
+                          {importStats.errors.length > 3 && (
                             <li className="italic">
-                              ...and {importStats.errors.length - 5} more errors
+                              ...and {importStats.errors.length - 3} more errors
                             </li>
                           )}
                         </ul>
@@ -483,19 +487,19 @@ const ImportExportPage = () => {
               )}
 
               {importError && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-md p-3 flex items-center">
-                  <AlertCircle className="h-5 w-5 mr-2" />
-                  {importError}
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-md p-3 flex items-start">
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">{importError}</span>
                 </div>
               )}
 
               {previewData && previewData.type === 'jobs' ? (
                 <div className="mb-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
-                    <h3 className="font-medium text-blue-800 mb-2">
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 sm:p-4 mb-4">
+                    <h3 className="font-medium text-blue-800 text-sm sm:text-base mb-2">
                       Preview Import
                     </h3>
-                    <p>
+                    <p className="text-xs sm:text-sm">
                       Found {previewData.count} job applications in the CSV
                       file.
                     </p>
@@ -503,25 +507,23 @@ const ImportExportPage = () => {
                     {previewData.companies &&
                       previewData.companies.length > 0 && (
                         <div className="mt-3">
-                          <h4 className="text-sm font-medium text-blue-800 mb-1">
+                          <h4 className="text-xs sm:text-sm font-medium text-blue-800 mb-1">
                             Companies Referenced:
                           </h4>
-                          <ul className="list-disc pl-5 text-blue-800">
+                          <ul className="list-disc pl-5 text-blue-800 text-xs sm:text-sm">
                             {previewData.companies
                               .slice(0, 5)
                               .map((company, index) => (
-                                <li key={index} className="text-sm">
-                                  {company}
-                                </li>
+                                <li key={index}>{company}</li>
                               ))}
                             {previewData.companies.length > 5 && (
-                              <li className="text-sm italic">
+                              <li className="italic">
                                 ...and {previewData.companies.length - 5} more
                               </li>
                             )}
                           </ul>
 
-                          <p className="mt-2 text-sm text-blue-800">
+                          <p className="mt-2 text-xs sm:text-sm text-blue-800">
                             <strong>Note:</strong> Make sure these companies
                             already exist in your tracker before importing.
                           </p>
@@ -530,17 +532,17 @@ const ImportExportPage = () => {
 
                     {previewData.data.length > 0 && (
                       <div className="mt-3">
-                        <h4 className="text-sm font-medium text-blue-800 mb-1">
+                        <h4 className="text-xs sm:text-sm font-medium text-blue-800 mb-1">
                           Sample Applications:
                         </h4>
-                        <ul className="list-disc pl-5 text-blue-800">
+                        <ul className="list-disc pl-5 text-blue-800 text-xs sm:text-sm">
                           {previewData.data.slice(0, 3).map((job, index) => (
-                            <li key={index} className="text-sm">
+                            <li key={index}>
                               {job.application.title} at {job.companyName}
                             </li>
                           ))}
                           {previewData.data.length > 3 && (
-                            <li className="text-sm italic">
+                            <li className="italic">
                               ...and {previewData.data.length - 3} more
                             </li>
                           )}
@@ -549,16 +551,16 @@ const ImportExportPage = () => {
                     )}
                   </div>
 
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                     <button
                       onClick={handleImportJobs}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm sm:text-base"
                     >
                       Confirm Import
                     </button>
                     <button
                       onClick={handleCancelImport}
-                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm sm:text-base"
                     >
                       Cancel
                     </button>
@@ -566,7 +568,7 @@ const ImportExportPage = () => {
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-4 text-xs sm:text-sm">
                     Upload a CSV file with job applications exported from this
                     tracker.
                     <strong className="text-red-600"> Important:</strong>{' '}
@@ -574,7 +576,7 @@ const ImportExportPage = () => {
                     applications.
                   </p>
 
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                     <input
                       type="file"
                       accept=".csv"
@@ -585,33 +587,33 @@ const ImportExportPage = () => {
                     />
                     <label
                       htmlFor="jobs-csv-upload"
-                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+                      className="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer text-sm sm:text-base"
                     >
-                      <Upload className="mr-1 h-5 w-5" />
+                      <Upload className="mr-1 h-4 w-4 sm:h-5 sm:w-5" />
                       {isImporting ? 'Processing...' : 'Select CSV File'}
                     </label>
 
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs sm:text-sm text-gray-500 truncate max-w-full">
                       {jobsFileInputRef.current?.files?.[0]?.name ||
                         'No file selected'}
                     </span>
                   </div>
 
                   <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <h3 className="text-sm font-medium text-yellow-800 mb-1">
+                    <h3 className="text-xs sm:text-sm font-medium text-yellow-800 mb-1">
                       Required CSV Format:
                     </h3>
-                    <p className="text-xs text-yellow-800 mb-2">
+                    <p className="text-xs sm:text-sm text-yellow-800 mb-2">
                       The CSV must include at least these columns:
                     </p>
-                    <pre className="text-xs text-yellow-800 bg-yellow-100 p-2 rounded overflow-auto">
+                    <pre className="text-xs bg-yellow-100 p-2 rounded overflow-auto whitespace-pre-wrap">
                       companyName,jobTitle,status,dateApplied
                       <br />
                       "Acme Inc","Software Developer","Applied","2025-04-20"
                       <br />
                       "XYZ Corp","DevOps Engineer","Interview","2025-04-15"
                     </pre>
-                    <p className="text-xs text-yellow-800 mt-2">
+                    <p className="text-xs sm:text-sm text-yellow-800 mt-2">
                       The easiest way to get the right format is to first export
                       your job applications, then modify that file and re-import
                       it.
@@ -622,24 +624,24 @@ const ImportExportPage = () => {
             </div>
 
             {/* Export Section */}
-            <div className="bg-white shadow-sm rounded-lg p-6">
+            <div className="bg-white shadow-sm rounded-lg p-4 sm:p-6">
               <div className="flex items-center mb-4">
-                <Download className="h-6 w-6 text-purple-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-900">
+                <Download className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 mr-2" />
+                <h2 className="text-base sm:text-lg font-medium text-gray-900">
                   Export Job Applications
                 </h2>
               </div>
 
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 mb-4 text-xs sm:text-sm">
                 Export your job applications as a CSV file for backup, analysis,
                 or to import them back later.
               </p>
 
               <button
                 onClick={handleExportApplications}
-                className="flex items-center w-full px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50"
+                className="flex items-center w-full px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 text-sm sm:text-base"
               >
-                <Download className="mr-2 h-5 w-5 text-purple-600" />
+                <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                 Export Job Applications
               </button>
             </div>

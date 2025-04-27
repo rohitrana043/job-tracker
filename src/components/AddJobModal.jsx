@@ -1,5 +1,5 @@
 // src/components/AddJobModal.jsx
-// Modal for adding a new job application to a company
+// Modal for adding a new job application to a company with improved responsiveness
 
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,12 +19,12 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
     description: '',
     status: 'Applied',
     dateApplied: getTodayFormatted(),
-    followUpDate: '', // New field for follow-up reminder
-    skills: '', // New field for skills highlighted
-    salary: '', // New field for salary information
-    location: '', // New field for job location
-    remote: false, // New field for remote option
-    notes: '', // Renamed from description to be more general
+    followUpDate: '',
+    skills: '',
+    salary: '',
+    location: '',
+    remote: false,
+    notes: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -80,7 +80,6 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
     // Auto-set follow-up date if not provided (1 week after application)
     let followUpDate = jobData.followUpDate;
     if (!followUpDate) {
-      // Use utility functions to handle this correctly
       followUpDate = formatDateForInput(addDays(jobData.dateApplied, 7));
     }
 
@@ -90,7 +89,7 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
       title: jobData.title,
       jobId: jobData.jobId || `JOB-${Math.floor(Math.random() * 10000)}`,
       status: jobData.status,
-      dateApplied: jobData.dateApplied, // Store as YYYY-MM-DD string
+      dateApplied: jobData.dateApplied,
       followUpDate: followUpDate,
       skills: jobData.skills,
       salary: jobData.salary,
@@ -110,17 +109,15 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
   const suggestedFollowUpDate = () => {
     if (!jobData.dateApplied) return '';
 
-    // Use the addDays utility to add 7 days correctly
-    const followUpDate = addDays(jobData.dateApplied, 7);
-    return formatDateForInput(followUpDate);
+    return formatDateForInput(addDays(jobData.dateApplied, 7));
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md p-6 fade-in max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Add Job Application for {company.name}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto fade-in">
+        <div className="sticky top-0 bg-white z-10 flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-semibold text-gray-800 pr-8 truncate">
+            Add Job: {company.name}
           </h2>
           <button
             onClick={onClose}
@@ -130,14 +127,14 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="p-4">
           <div className="space-y-4">
             {/* Basic Information */}
             <div>
               <h3 className="text-md font-medium text-gray-700 mb-2">
                 Basic Information
               </h3>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Job Title*
@@ -224,7 +221,7 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
                   </select>
                 </div>
 
-                <div>
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Follow-up Reminder
                   </label>
@@ -340,17 +337,17 @@ const AddJobModal = ({ company, onClose, onAddJob }) => {
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className="mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 order-2 sm:order-1"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 order-1 sm:order-2"
             >
               Add Job
             </button>

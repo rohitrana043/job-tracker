@@ -1,8 +1,9 @@
 // src/components/CompanyCard.jsx
-// Card component to display a company and its applications
+// Card component to display a company and its applications with better mobile responsiveness
 
 import { Link } from 'react-router-dom';
 import { ChevronRight, Briefcase } from 'lucide-react';
+import { formatDateForDisplay, parseISODate } from '../utils/dateUtils';
 
 const CompanyCard = ({ company }) => {
   const applicationCount = company.applications?.length || 0;
@@ -13,12 +14,12 @@ const CompanyCard = ({ company }) => {
       className="block border rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 bg-white"
     >
       <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <div className="bg-blue-100 p-2 rounded-full">
+        <div className="flex items-center space-x-3 min-w-0">
+          <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
             <Briefcase className="h-6 w-6 text-blue-600" />
           </div>
-          <div>
-            <h3 className="font-medium text-lg text-gray-900">
+          <div className="min-w-0">
+            <h3 className="font-medium text-lg text-gray-900 truncate">
               {company.name}
             </h3>
             <p className="text-sm text-gray-500">
@@ -30,7 +31,7 @@ const CompanyCard = ({ company }) => {
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 text-gray-400" />
+        <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0" />
       </div>
 
       {applicationCount > 0 && (
@@ -44,7 +45,7 @@ const CompanyCard = ({ company }) => {
                 key={app.id}
                 className="text-sm flex items-center justify-between"
               >
-                <span className="truncate">{app.title}</span>
+                <span className="truncate pr-2 flex-grow">{app.title}</span>
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
                     app.status === 'Applied'
